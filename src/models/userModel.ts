@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { User } from "./userTypes";
+import { User } from "../types/userTypes";
 
 const userSchema = new mongoose.Schema<User>(
   {
@@ -20,10 +20,7 @@ const userSchema = new mongoose.Schema<User>(
       type: String,
       required: true,
     },
-    confirmPassword: {
-      type: String,
-      required: true,
-    },
+
     phoneNumber: {
       type: String,
       required: true,

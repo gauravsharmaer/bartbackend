@@ -13,8 +13,7 @@ const globalErrorHandler = (
 
     return res.status(statusCode).json({
       message: err.message,
-      //error stack tells which file has error show it only in dev not in production otherwise it will show
-      //our file internal structure which is not good for security
+
       errStack: config.env === "development" ? err.stack : "",
     });
   }
