@@ -5,7 +5,7 @@ import userModel from "../models/userModel";
 import bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
-
+import jwt from "jsonwebtoken";
 import {
   validateRegistrationSchema,
   validateLoginSchema,
@@ -111,4 +111,39 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createUser, loginUser };
+const profiler = async (req: Request, res: Response, next: NextFunction) => {
+  console.log(req);
+  try {
+    const authToken = req.cookies.authToken;
+    console.log(authToken);
+    if (!authToken) {
+      res.status(401).json({ logged_in: false });
+      return;
+    }
+
+    const JWTPayload = jwt.verify(authToken, config.jwtSecret as string);
+    console.log(JWTPayload);
+    const user_id = JWTPayload.sub;
+    console.log(user_id);
+    if (!user_id) {
+      res.status(500).json({ logged_in: false });
+      return;
+    }
+
+    const thisUser = await userModel.findById(user_id);
+    console.log(thisUser);
+    res.status(200).json({
+      logged_in: true,
+      data: thisUser,
+    });
+  } catch (err) {
+    console.log(err);
+    if (err) {
+      return res.status(500).json({
+        error: "Session timed out, please login again",
+      });
+    }
+  }
+};
+
+export { createUser, loginUser, profiler };
