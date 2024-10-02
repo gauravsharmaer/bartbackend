@@ -4,7 +4,12 @@ import globalErrorHandler from "./middlewares/globalErrorHandler";
 import userRouter from "./Routes/userRouter";
 import cookieParser from "cookie-parser";
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 //used for json parsing
 app.use(express.json());
 

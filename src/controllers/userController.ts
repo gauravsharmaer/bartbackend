@@ -10,7 +10,8 @@ import {
   validateRegistrationSchema,
   validateLoginSchema,
 } from "../utils/userValidation";
-
+import { appLogger } from "../logger/logger";
+import { json } from "stream/consumers";
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, email, password, phoneNumber, image } = req.body;
@@ -112,7 +113,9 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const profiler = async (req: Request, res: Response, next: NextFunction) => {
-  console.log(req);
+  // console.log(req);
+  //logger bydefault log string
+  appLogger.info(JSON.stringify(req.cookies));
   try {
     const authToken = req.cookies.authToken;
     console.log(authToken);
