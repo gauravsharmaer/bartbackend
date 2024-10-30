@@ -6,4 +6,14 @@ export interface User {
   confirmPassword: string;
   phoneNumber: string;
   image: string;
+  passwordResetToken: string;
+  passwordResetTokenExpiryTime: Date;
+  faceDescriptor: number[];
+}
+
+export interface OTP {
+  _id: string;
+  email: string;
+  otp: string;
+  expiresAt: Date;
 }

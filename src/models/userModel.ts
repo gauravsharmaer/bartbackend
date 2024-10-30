@@ -16,14 +16,25 @@ const userSchema = new mongoose.Schema<User>(
       type: String,
       required: true,
     },
-    image: {
-      type: String,
-      required: true,
-    },
 
     phoneNumber: {
       type: String,
       required: true,
+    },
+
+    faceDescriptor: {
+      type: [Number],
+      required: true,
+    },
+    passwordResetToken: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    passwordResetTokenExpiryTime: {
+      type: Date,
+      required: false,
+      default: null,
     },
   },
   { timestamps: true }

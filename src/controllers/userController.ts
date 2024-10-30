@@ -11,10 +11,11 @@ import {
   validateLoginSchema,
 } from "../utils/userValidation";
 import { appLogger } from "../logger/logger";
-import { json } from "stream/consumers";
+import { findUserByFaceDescriptor } from "../utils/faceRecognition";
+
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, email, password, phoneNumber, image } = req.body;
+    const { name, email, password, phoneNumber, faceDescriptor } = req.body;
 
     // Validation
     const validationResult = validateRegistrationSchema(req.body);
@@ -37,13 +38,21 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Ensure faceDescriptor is an array of numbers
+    if (
+      !Array.isArray(faceDescriptor) ||
+      faceDescriptor.some((item) => typeof item !== "number")
+    ) {
+      return next(createHttpError(400, "Invalid face descriptor"));
+    }
+
     // Create new user
-    await userModel.create({
+    const newUser = await userModel.create({
       name,
       email,
       password: hashedPassword,
       phoneNumber,
-      image,
+      faceDescriptor,
     });
 
     // Send success response
@@ -149,4 +158,72 @@ const profiler = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createUser, loginUser, profiler };
+const loginUserWithFace = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { faceDescriptor } = req.body;
+
+    if (
+      !faceDescriptor ||
+      !Array.isArray(faceDescriptor) ||
+      faceDescriptor.length !== 128
+    ) {
+      return next(createHttpError(400, "Invalid face descriptor"));
+    }
+
+    console.log("Received face descriptor:", faceDescriptor);
+
+    const result = await findUserByFaceDescriptor(faceDescriptor);
+
+    if (!result || result.distance > 0.4) {
+      console.log("No matching user found or distance too high");
+      return next(createHttpError(401, "Face not recognized"));
+    }
+
+    console.log(
+      `Matched user: ${result.user.email}, distance: ${result.distance}`
+    );
+
+    // Create access token
+    const token = sign({ sub: result.user._id }, config.jwtSecret as string, {
+      expiresIn: "1d",
+    });
+
+    const expirationTime = new Date();
+    expirationTime.setHours(expirationTime.getHours() + 24);
+
+    const cookiesOptionsDev = {
+      expires: expirationTime,
+      httpOnly: true,
+    };
+
+    const cookiesOptionsProd = {
+      expires: expirationTime,
+      httpOnly: true,
+      secure: true,
+      domain: "bart.com",
+      sameSite: "none",
+    };
+
+    const cookiesOptions =
+      process.env.NODE_ENV === "production"
+        ? cookiesOptionsProd
+        : cookiesOptionsDev;
+
+    res.cookie("authToken", token, cookiesOptions);
+
+    return res.status(200).json({
+      message: "Login successful",
+      email: result.user.email,
+      distance: result.distance,
+    });
+  } catch (err) {
+    console.error("Error in loginUserWithFace:", err);
+    return next(createHttpError(500, "Internal server error"));
+  }
+};
+
+export { createUser, loginUser, profiler, loginUserWithFace };

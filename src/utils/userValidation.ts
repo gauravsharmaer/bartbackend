@@ -9,7 +9,6 @@ export const validateRegistrationSchema = (obj: User) => {
       password: z.string().min(8, "Password must be at least 8 characters"),
 
       phoneNumber: z.string().min(10, "Phone number is required"),
-      image: z.string().min(1, "Image is required"),
     })
     .required();
   return createUserSchema.safeParse(obj);
@@ -23,4 +22,9 @@ export const validateLoginSchema = (obj: User) => {
     })
     .required();
   return loginUserSchema.safeParse(obj);
+};
+
+export const validateEmail = (email: string) => {
+  const emailSchema = z.string().email("Invalid email address");
+  return emailSchema.safeParse(email);
 };
