@@ -218,6 +218,7 @@ const loginUserWithFace = async (
     return res.status(200).json({
       message: "Login successful",
       email: result.user.email,
+      user_id: result.user._id,
       distance: result.distance,
     });
   } catch (err) {
