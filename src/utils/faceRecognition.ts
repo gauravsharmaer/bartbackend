@@ -2,14 +2,14 @@ import userModel from "../models/userModel";
 
 const FACE_MATCH_THRESHOLD = 0.3; // or even lower, like 0.3
 
-const euclideanDistance = (a: number[], b: number[]): number => {
+export const euclideanDistance = (a: number[], b: number[]): number => {
   if (a.length !== b.length) {
     throw new Error("Arrays must have the same length");
   }
   return Math.sqrt(a.reduce((sum, _, i) => sum + Math.pow(a[i] - b[i], 2), 0));
 };
 
-const normalizeDescriptor = (descriptor: number[]): number[] => {
+export const normalizeDescriptor = (descriptor: number[]): number[] => {
   const magnitude = Math.sqrt(
     descriptor.reduce((sum, val) => sum + val * val, 0)
   );

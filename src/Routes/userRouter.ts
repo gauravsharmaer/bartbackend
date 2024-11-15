@@ -4,6 +4,7 @@ import {
   loginUser,
   profiler,
   loginUserWithFace,
+  verifyUserFace,
 } from "../controllers/userController";
 import {
   sendOtp,
@@ -30,4 +31,5 @@ userRouter.post("/verify-otp", verifyOtp);
 userRouter.post("/forgot-password", forgotPassword);
 userRouter.post("/reset-password", resetPassword);
 userRouter.post("/login-with-face", loginUserWithFace);
+userRouter.post("/verify-user-face", verifyUserFace);
 export default userRouter;

@@ -12,6 +12,10 @@ import {
 } from "../utils/userValidation";
 import { appLogger } from "../logger/logger";
 import { findUserByFaceDescriptor } from "../utils/faceRecognition";
+import {
+  normalizeDescriptor,
+  euclideanDistance,
+} from "../utils/faceRecognition";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -114,7 +118,12 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     res.cookie("authToken", token, cookiesOptions);
 
     // Send response with token
-    return res.status(200).json({ message: "Login successfull" });
+    return res.status(200).json({
+      message: "Login successful",
+      email: user.email,
+      user_id: user._id,
+      name: user.name,
+    });
   } catch (err) {
     // Global error handling
     return next(createHttpError(500, "Internal server error"));
@@ -220,6 +229,7 @@ const loginUserWithFace = async (
       email: result.user.email,
       user_id: result.user._id,
       distance: result.distance,
+      name: result.user.name,
     });
   } catch (err) {
     console.error("Error in loginUserWithFace:", err);
@@ -227,4 +237,51 @@ const loginUserWithFace = async (
   }
 };
 
-export { createUser, loginUser, profiler, loginUserWithFace };
+const verifyUserFace = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const FACE_MATCH_THRESHOLD = 0.3;
+    const { userId, faceDescriptor } = req.body;
+
+    if (!userId) {
+      return next(createHttpError(400, "User ID is required"));
+    }
+
+    if (
+      !faceDescriptor ||
+      !Array.isArray(faceDescriptor) ||
+      faceDescriptor.length !== 128
+    ) {
+      return next(createHttpError(400, "Invalid face descriptor"));
+    }
+
+    // Find user directly by ID
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return next(createHttpError(404, "User not found"));
+    }
+
+    // Use the same comparison logic from faceRecognition.ts
+    const normalizedInput = normalizeDescriptor(faceDescriptor);
+    const normalizedStored = normalizeDescriptor(user.faceDescriptor);
+    const distance = euclideanDistance(normalizedInput, normalizedStored);
+
+    const isMatch = distance <= FACE_MATCH_THRESHOLD;
+
+    console.log(`Distance: ${distance.toFixed(4)}, isMatch: ${isMatch}`);
+
+    return res.status(200).json({
+      name: user.name,
+      isMatch,
+      distance,
+    });
+  } catch (err) {
+    console.error("Error in verifyUserFace:", err);
+    return next(createHttpError(500, "Internal server error"));
+  }
+};
+
+export { createUser, loginUser, profiler, loginUserWithFace, verifyUserFace };
