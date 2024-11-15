@@ -15,14 +15,6 @@ import {
 // import rateLimit from "express-rate-limit";
 const userRouter = express.Router();
 
-// const otpLimiter = rateLimit({
-//   windowMs: 1 * 60 * 1000, // 1 minute
-//   max: 5,
-//   message: "Too many OTP requests, please try again later.",
-//   standardHeaders: true,
-//   legacyHeaders: false,
-// });
-
 userRouter.post("/register", createUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/profile", profiler);

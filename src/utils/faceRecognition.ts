@@ -18,6 +18,7 @@ export const normalizeDescriptor = (descriptor: number[]): number[] => {
 
 export const findUserByFaceDescriptor = async (
   faceDescriptor: number[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ user: any; distance: number } | null> => {
   const normalizedInput = normalizeDescriptor(faceDescriptor);
   const users = await userModel.find({});

@@ -40,23 +40,6 @@ const sendOtp = async (req: Request, res: Response, next: NextFunction) => {
 
     // Check if an unexpired OTP already exists
     const currentUTCTime = new Date();
-    // const existingOTP = await otpModel.findOne({
-    //   email,
-    //   expiresAt: { $gt: currentUTCTime },
-    // });
-
-    // if (existingOTP) {
-    //   const timeLeft = Math.ceil(
-    //     (existingOTP.expiresAt.getTime() - currentUTCTime.getTime()) / 60000
-    //   );
-    //   return res.status(429).json({
-    //     success: false,
-    //     message: `An OTP has already been sent. Please wait ${timeLeft} minutes before requesting a new one.`,
-    //   });
-    // }
-
-    // Delete any existing OTP records for this email
-    // await otpModel.deleteMany({ email });
 
     const OTP = generateOTP();
     const expiryTime = new Date(
@@ -179,18 +162,6 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
       `OTP verified successfully for ${email} at ${new Date().toISOString()}`
     );
 
-    // const token = crypto.randomBytes(32).toString("hex");
-    // const currentUTCTime = new Date();
-    // const expiryTime = new Date(
-    //   currentUTCTime.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000
-    // );
-
-    // await userModel.findOneAndUpdate(
-    //   { email },
-    //   { passwordResetToken: token, passwordResetTokenExpiryTime: expiryTime },
-    //   { new: true, runValidators: true }
-    // );
-
     return res.status(200).json({
       success: true,
       message: "OTP verified successfully",
@@ -250,7 +221,7 @@ const forgotPassword = async (
       { new: true, runValidators: true }
     );
 
-    const resetUrl = `${"http://localhost:5173"}/resetPassword?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/resetPassword?token=${token}`;
 
     const mailOptions = {
       from: FROM_EMAIL,
@@ -310,22 +281,6 @@ const resetPassword = async (
     ) {
       return next(createHttpError(400, "Reset token expired"));
     }
-
-    // const user = await userModel.findOne({
-    //   email,
-    //   passwordResetTokenExpiryTime: { $gt: new Date() },
-    // });
-
-    // if (!user || !user.passwordResetToken) {
-    //   return next(createHttpError(400, "Invalid or expired reset token"));
-    // }
-
-    // Verify the JWT token
-
-    // Check if the token matches the one stored in the user document
-    // if (token !== user.passwordResetToken) {
-    //   return next(createHttpError(400, "Invalid reset token"));
-    // }
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
