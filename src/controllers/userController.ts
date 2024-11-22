@@ -123,6 +123,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
       email: user.email,
       user_id: user._id,
       name: user.name,
+      isFaceVerified: user.faceDescriptor.length > 0,
     });
   } catch (err) {
     // Global error handling
@@ -230,6 +231,7 @@ const loginUserWithFace = async (
       user_id: result.user._id,
       distance: result.distance,
       name: result.user.name,
+      isFaceVerified: result.user.faceDescriptor.length > 0,
     });
   } catch (err) {
     console.error("Error in loginUserWithFace:", err);
@@ -284,4 +286,58 @@ const verifyUserFace = async (
   }
 };
 
-export { createUser, loginUser, profiler, loginUserWithFace, verifyUserFace };
+const updateUserFaceDescriptor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, faceDescriptor } = req.body;
+
+    // Validate user ID
+    if (!userId) {
+      return next(createHttpError(400, "User ID is required"));
+    }
+
+    // Validate face descriptor
+    if (
+      !faceDescriptor ||
+      !Array.isArray(faceDescriptor) ||
+      faceDescriptor.length !== 128 ||
+      faceDescriptor.some((item) => typeof item !== "number")
+    ) {
+      return next(createHttpError(400, "Invalid face descriptor"));
+    }
+
+    // Find and update user
+
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { faceDescriptor },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return next(createHttpError(404, "User not found"));
+    }
+
+    return res.status(200).json({
+      message: "Face descriptor updated successfully",
+      userId: updatedUser._id,
+      name: updatedUser.name,
+    });
+  } catch (err) {
+    console.error("Error in updateUserFaceDescriptor:", err);
+
+    return next(createHttpError(500, "Internal server error"));
+  }
+};
+
+export {
+  createUser,
+  loginUser,
+  profiler,
+  loginUserWithFace,
+  verifyUserFace,
+  updateUserFaceDescriptor,
+};

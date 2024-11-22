@@ -4,10 +4,19 @@ import globalErrorHandler from "./middlewares/globalErrorHandler";
 import userRouter from "./Routes/userRouter";
 import cookieParser from "cookie-parser";
 const app = express();
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL,
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Add fallback
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Explicitly specify allowed methods
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"], // Explicitly specify allowed headers
+    exposedHeaders: ["set-cookie"], // Important for cookies
   })
 );
 //used for json parsing
