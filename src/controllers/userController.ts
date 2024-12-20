@@ -332,6 +332,31 @@ const updateUserFaceDescriptor = async (
     return next(createHttpError(500, "Internal server error"));
   }
 };
+const logout = async (req: Request, res: Response) => {
+  try {
+    const cookiesOptionsDev = {
+      httpOnly: true,
+    };
+
+    const cookiesOptionsProd = {
+      httpOnly: true,
+      secure: true,
+      domain: "bart.com",
+      sameSite: "none",
+    };
+
+    const cookiesOptions =
+      process.env.NODE_ENV === "production"
+        ? cookiesOptionsProd
+        : cookiesOptionsDev;
+
+    res.clearCookie("authToken", cookiesOptions);
+    return res.status(200).json({ message: "Logout successfull" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 export {
   createUser,
@@ -340,4 +365,5 @@ export {
   loginUserWithFace,
   verifyUserFace,
   updateUserFaceDescriptor,
+  logout,
 };

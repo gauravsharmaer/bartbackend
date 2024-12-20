@@ -6,6 +6,7 @@ import {
   loginUserWithFace,
   verifyUserFace,
   updateUserFaceDescriptor,
+  logout,
 } from "../controllers/userController";
 import {
   sendOtp,
@@ -26,4 +27,5 @@ userRouter.post("/reset-password", resetPassword);
 userRouter.post("/login-with-face", loginUserWithFace);
 userRouter.post("/verify-user-face", verifyUserFace);
 userRouter.post("/update-face-descriptor", updateUserFaceDescriptor);
+userRouter.get("/logout", logout);
 export default userRouter;
