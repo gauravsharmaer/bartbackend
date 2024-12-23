@@ -16,6 +16,15 @@ import {
   normalizeDescriptor,
   euclideanDistance,
 } from "../utils/faceRecognition";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Create uploads directory if it doesn't exist
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -124,6 +133,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
       user_id: user._id,
       name: user.name,
       isFaceVerified: user.faceDescriptor.length > 0,
+      imagePath: user.imagePath,
     });
   } catch (err) {
     // Global error handling
@@ -132,7 +142,6 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const profiler = async (req: Request, res: Response, next: NextFunction) => {
-  // console.log(req);
   //logger bydefault log string
   appLogger.info(JSON.stringify(req.cookies));
   try {
@@ -358,6 +367,56 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
+const uploadUserImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "Image file is required" });
+    }
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        error: "Invalid file type. Only JPG, PNG and GIF files are allowed",
+      });
+    }
+
+    const filePath = `uploads/${req.file.filename}`;
+
+    // Update user with the file path
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { imagePath: filePath },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return next(createHttpError(404, "User not found"));
+    }
+
+    return res.status(200).json({
+      message: "Image uploaded successfully",
+      userId: updatedUser._id,
+      imagePath: filePath,
+    });
+  } catch (error) {
+    console.error("Error in uploadUserImage:", error);
+    return next(
+      createHttpError(500, "An error occurred while uploading the image")
+    );
+  }
+};
+
 export {
   createUser,
   loginUser,
@@ -366,4 +425,5 @@ export {
   verifyUserFace,
   updateUserFaceDescriptor,
   logout,
+  uploadUserImage,
 };

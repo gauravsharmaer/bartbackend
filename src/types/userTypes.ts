@@ -5,7 +5,7 @@ export interface User {
   password: string;
   confirmPassword: string;
   phoneNumber: string;
-  image: string;
+  imagePath: string;
   passwordResetToken: string;
   passwordResetTokenExpiryTime: Date;
   faceDescriptor: number[];
