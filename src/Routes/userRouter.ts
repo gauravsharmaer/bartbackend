@@ -16,6 +16,7 @@ import {
   resetPassword,
 } from "../controllers/emailController";
 import multer from "multer";
+import path from "path";
 
 // import rateLimit from "express-rate-limit";
 const userRouter = express.Router();
@@ -26,7 +27,12 @@ const storage = multer.diskStorage({
     cb(null, "uploads");
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    // Get file extension from original file
+    const fileExt = path.extname(file.originalname);
+    // Get userId from query params
+    const userId = req.query.userId;
+    // Create filename as userId + extension
+    cb(null, `${userId}${fileExt}`);
   },
 });
 

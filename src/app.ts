@@ -34,6 +34,9 @@ app.get("/", (req, res) => {
   });
 });
 
+// Serve static files from 'uploads' directory
+app.use("/uploads", express.static("uploads"));
+
 app.use("/api/users", userRouter);
 
 //global error handler middleware should present in last of application and has 4 parameters
