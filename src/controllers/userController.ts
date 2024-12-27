@@ -394,14 +394,17 @@ const uploadUserImage = async (
     // The file path will now be predictable
     const filePath = `uploads/${req.file.filename}`;
 
-    // If you want to delete the old file before saving the new one
-    const user = await userModel.findById(userId);
-    if (user?.imagePath && fs.existsSync(user.imagePath)) {
-      try {
-        fs.unlinkSync(user.imagePath);
-      } catch (err) {
-        console.error("Error deleting old image:", err);
-        // Continue with the upload even if delete fails
+    // Delete any existing files that start with userId, except the new file
+    const uploadDir = "uploads";
+    const files = fs.readdirSync(uploadDir);
+    for (const file of files) {
+      if (file.startsWith(userId as string) && file !== req.file.filename) {
+        try {
+          fs.unlinkSync(path.join(uploadDir, file));
+        } catch (err) {
+          console.error(`Error deleting old image: ${file}`, err);
+          // Continue with the upload even if delete fails
+        }
       }
     }
 
