@@ -12,7 +12,7 @@ const app = express();
 // );
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Add fallback
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Updated origin
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Explicitly specify allowed methods
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"], // Explicitly specify allowed headers
