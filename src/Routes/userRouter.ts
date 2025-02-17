@@ -15,6 +15,7 @@ import {
   forgotPassword,
   resetPassword,
 } from "../controllers/emailController";
+import { saveMessage, getChatHistory, getRecentChats, deleteMessage, deleteChat, editMessage } from "../controllers/chatController";
 import multer from "multer";
 import path from "path";
 
@@ -50,4 +51,11 @@ userRouter.post("/verify-user-face", verifyUserFace);
 userRouter.post("/update-face-descriptor", updateUserFaceDescriptor);
 userRouter.get("/logout", logout);
 userRouter.post("/upload-user-image", upload.single("image"), uploadUserImage);
+userRouter.post("/save-message", saveMessage);
+userRouter.get("/get-chat-history/:userId1/:userId2", getChatHistory);
+userRouter.get("/get-recent-chats/:userId", getRecentChats);
+userRouter.delete("/delete-message/:chatId/:messageId", deleteMessage);
+userRouter.delete("/delete-chat/:userId1/:userId2", deleteChat);
+userRouter.put("/edit-message/:chatId/:messageId", editMessage);
+
 export default userRouter;
